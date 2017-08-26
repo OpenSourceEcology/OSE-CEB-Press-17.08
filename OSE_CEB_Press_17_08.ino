@@ -1,25 +1,12 @@
 /* Open Source Ecology CEB Press v16.09 v8 Teensy Microcontroller code for Auto mode operation
-  Initializes from manual position setup of pistons,
-  controls MOSFET's HIGH/LOW to control two 3 position hydraulic solenoids,
+  Switches FET's HIGH/LOW to control two 3 position hydraulic solenoids,
   measures piston motion time relative to pressure sensor trigger,
   and repeats cycle while auto calibrating timing from previous cycles and startup positions.
 
   Compensates for difference in time for Extension and Contraction of Rods.
   T_extend = T_contract  * (A_cyl - A_rod) / A_cyl)
 
-  Detects lack of soil by extreme extent of main Cylinder during compression step
-  and other faults by comparing previous times to current timing.
-
-  Faults require manual user intervention to reset to step starting position of that step or manual recalibration if power is lost to controller.
-
-  User must manually compress brick(s) to verify correct machine function before engaging Auto Mode.
-
-  Auto mode does a main Cyl calibration by position against a user pressed brick to calibrate for brick thickness.
-
-  Purposefully wrote the code for novice readability? and not code efficiency
-  so not enough encapsulation, math is written in longer form etc. Mmm copy pasta.
-  Despite the mess it might help with any intial troubleshooting?
-  Otherwise the Loop needs some OOP.
+  Faults require manual user intervention to reset to starting position if faults occur and power must be shujt off to controller by engaging OFF/MANUAL mode(s).
 
   Contributions by:
   Abe Anderson
@@ -54,8 +41,6 @@ bool lowPressure();    //function to read if pressure sensor is HIGH
 void setup() {
 
   //initialize pin I/O Inputs use internal resistor pullups where needed and outputs get set low to prevent glitches while booting
-  pinMode(MODE_SELECT, INPUT);
-  digitalWrite(MODE_SELECT, INPUT_PULLUP);
   pinMode(SOLENOID_RIGHT, OUTPUT);
   digitalWrite(SOLENOID_RIGHT, LOW);
   pinMode(SOLENOID_LEFT, OUTPUT);
@@ -67,7 +52,17 @@ void setup() {
   pinMode(PRESSURE_SENSOR, INPUT);
   digitalWrite(PRESSURE_SENSOR, INPUT_PULLUP);
 
+  //Initialize  to start position
+  digitalWrite(SOLENOID_DOWN, HIGH);
+  delay(1000);
+  digitalWrite(SOLENOID_DOWN, LOW);
+  while ((lowPressure() == true) {
+    digitalWrite(SOLENOID_RIGHT, HIGH);
+    }
+         digitalWrite(SOLENOID_RIGHT, LOW);
+
 }
+
 
 void loop() {
   /*
@@ -78,9 +73,6 @@ void loop() {
     and the auto mode to calculate motion times from starting positions.
   */
 
-  static byte cycleStep = 1;
-  static bool noFaults = true;    //state of fault tracking
-  static bool calibrated = false;   //sets state for first cycle calibration of main Cyl
   unsigned long previousMillis = 0;
 
   static unsigned long drawerRetTime = 0;   //measured
@@ -112,8 +104,7 @@ void loop() {
       //Step 1 Retraction drawer Cyl RIGHT measure T_ret at Presure sensor high or calibrate main retraction if first cycle or faults
 
           //Run first cycle calibration main retraction if first cycle or faults
-          if (calibrated == false) {
-            while ((lowPressure() == true) && (autoMode() == true)) {
+          while (lowPressure() == true) {
               previousMillis = millis();
               digitalWrite(SOLENOID_DOWN, HIGH);
             }
@@ -123,7 +114,7 @@ void loop() {
             calibrated = true;
      
           //return main cylinder to user set point
-          while ((lowPressure() == true) && (autoMode() == true)) {
+          while ((lowPressure() == true) {
             mainCalTime = mainRetTime * kAMain;
             previousMillis = millis();
             while ((millis() - previousMillis) < mainCalTime) {
@@ -132,7 +123,7 @@ void loop() {
             digitalWrite(SOLENOID_UP, LOW);
 
             //Retraction drawer Cyl RIGHT measure T_ret at Presure sensor high
-            while ((lowPressure() == true) && (autoMode() == true)) {
+            while ((lowPressure() == true) {
               previousMillis = millis();
               digitalWrite(SOLENOID_RIGHT, HIGH);
             }
@@ -148,10 +139,7 @@ void loop() {
                 maximum = max(drawerRetTime, drawerRetTimePre);
                 drift = maximum - minimum;
                 if (drift > MAXDRIFT) {
-                  noFaults = false;
-                  calibrated = false;
-                  cycleStep = 1;
-                  break;
+                  while( true ) { //sleep in infinite loop }
                 }
               }
             }
@@ -161,7 +149,7 @@ void loop() {
 
       //Step 2 Ejection by extending main cyl UP until pressure sensor high measure T_ext
 
-          while ((lowPressure() == true) && (autoMode() == true)) {
+          while ((lowPressure() == true) {
             previousMillis = millis();
             digitalWrite(SOLENOID_UP, HIGH);
           }
@@ -177,10 +165,7 @@ void loop() {
               maximum = max(mainEjcTime, mainEjcTime);
               drift = maximum - minimum;
               if (drift > MAXDRIFT) {
-                noFaults = false;
-                calibrated = false;
-                cycleStep = 2;
-                break;
+                while( true ) { //sleep in infinite loop }
               }
             }
           }
@@ -188,7 +173,7 @@ void loop() {
 
       //Step 3 Brick Removal 2nd Cyl extended LEFT until Presure sensor high
 
-          while ((lowPressure() == true) && (autoMode() == true)) {
+          while ((lowPressure() == true) {
             previousMillis = millis();
             digitalWrite(SOLENOID_LEFT, HIGH);
           }
@@ -204,9 +189,7 @@ void loop() {
               maximum = max(drawerExtTime, drawerExtTime);
               drift = maximum - minimum;
               if (drift > MAXDRIFT) {
-                noFaults = false;
-                cycleStep = 3;
-                break;
+                while( true ) { //sleep in infinite loop }
               }
             }
           }
@@ -215,7 +198,7 @@ void loop() {
 
       //Step 4 Soil Load main Cyl moves DOWN/retracts and soil enters chamber
 
-          while ((lowPressure() == true) && (autoMode() == true)) {
+          while ((lowPressure() == true) &{
             previousMillis = millis();
             while ((millis() - previousMillis) <= mainRetTime) {
               digitalWrite(SOLENOID_DOWN, HIGH);
@@ -233,16 +216,14 @@ void loop() {
               maximum = max(mainRetTime, mainRetTime);
               drift = maximum - minimum;
               if (drift > MAXDRIFT) {
-                noFaults = false;
-                cycleStep = 4;
-                break;
+                while( true ) { //sleep in infinite loop }
               }
             }
           }
           mainRetTimePre = mainRetTime;
 
       //Step 5 Chamber/Drawer Closure drawer retraction time to midpoint is calculated from initial full contraction from the midpoint (step 1 measurement)
-          while ((lowPressure() == true) && (autoMode() == true)) {
+          while (owPressure() == true) 
             drawerMidTime = drawerExtTime / kADrawer ;
             previousMillis = millis();
             while ((millis() - previousMillis) <= drawerMidTime) {
@@ -259,8 +240,7 @@ void loop() {
               maximum = max( drawerMidTime,  drawerMidTime);
               drift = maximum - minimum;
               if (drift > MAXDRIFT) {
-                noFaults = false;
-                break;
+                while( true ) { //sleep in infinite loop }
               }
             }
           }
@@ -291,9 +271,9 @@ void loop() {
               maximum = max( mainCompTime,  mainCompTime);
               drift = maximum - minimum;
               if (drift > MAXDRIFT) {
-                noFaults = false;
 
-                break;
+
+                while( true ) { //sleep in infinite loop }
               }
             }
           }
@@ -307,21 +287,7 @@ void loop() {
 
 //custom functions
 
-//reads mode switch state HIGH/true is auto mode ON and LOW/false is AUTO mode OFF PAUSE or MANUAL due to 3 position switch
-bool autoMode() {
-  if (digitalRead(MODE_SELECT) == HIGH) {
-    delay(SWITCH_DEBOUNCE);
-    if (digitalRead(MODE_SELECT) == HIGH) {
-      return true;
-    }
-    else {
-      return false;
-    }
-  }
-  else {
-    return false;
-  }
-}
+
 
 //reads pressure sensor state HIGH is false and LOW is true
 bool lowPressure() {
