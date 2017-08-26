@@ -52,7 +52,7 @@ void setup() {
   pinMode(PRESSURE_SENSOR, INPUT);
   digitalWrite(PRESSURE_SENSOR, INPUT_PULLUP);
 
-  //Initialize  to start position
+  //Step 1 Initialize  to start position retract main cyl for 1 sec to release pressue contract drawer cyl fully
   digitalWrite(SOLENOID_DOWN, HIGH);
   delay(1000);
   digitalWrite(SOLENOID_DOWN, LOW);
@@ -60,17 +60,20 @@ void setup() {
     digitalWrite(SOLENOID_RIGHT, HIGH);
     }
          digitalWrite(SOLENOID_RIGHT, LOW);
-
 }
-
+         
+   //Create initial button polling routine for a several seconds to check for thickness setting option?
+   //Indicator lights would be useful for button selection.
+   //Poll for button press(es) debounce and count. Need to write, copy, and/or point to var for use in loop?
 
 void loop() {
   /*
     Auto mode starting assumptions
-    User has manually pressed a brick to test system for proper function
-    and it is ready to retract the drawer, eject, and remove the brick.
-    This allows user to set brick thickness
-    and the auto mode to calculate motion times from starting positions.
+    User has manually tested system for proper function
+    and it is ready to extend the drawer measure time
+    and
+    
+   
   */
 
   unsigned long previousMillis = 0;
@@ -100,10 +103,9 @@ void loop() {
   unsigned long maximum = 0;    //and compare values
   byte drift = 0;               //for timing drift tracking
 
+/*
 
-      //Step 1 Retraction drawer Cyl RIGHT measure T_ret at Presure sensor high or calibrate main retraction if first cycle or faults
-
-          //Run first cycle calibration main retraction if first cycle or faults
+   
           while (lowPressure() == true) {
               previousMillis = millis();
               digitalWrite(SOLENOID_DOWN, HIGH);
@@ -111,8 +113,7 @@ void loop() {
             digitalWrite(SOLENOID_DOWN, LOW);
             mainRetTime = millis() - previousMillis;
             mainRetTimePre = mainRetTime;
-            calibrated = true;
-     
+            
           //return main cylinder to user set point
           while ((lowPressure() == true) {
             mainCalTime = mainRetTime * kAMain;
@@ -122,6 +123,17 @@ void loop() {
             }
             digitalWrite(SOLENOID_UP, LOW);
 
+
+
+
+
+*/
+    
+    
+    
+      //Step 2 Calibration Extend drawer Cyl Fully and measure T_ret at Presure sensor high
+
+       
             //Retraction drawer Cyl RIGHT measure T_ret at Presure sensor high
             while ((lowPressure() == true) {
               previousMillis = millis();
@@ -198,7 +210,7 @@ void loop() {
 
       //Step 4 Soil Load main Cyl moves DOWN/retracts and soil enters chamber
 
-          while ((lowPressure() == true) &{
+          while ((lowPressure() == true) {
             previousMillis = millis();
             while ((millis() - previousMillis) <= mainRetTime) {
               digitalWrite(SOLENOID_DOWN, HIGH);
@@ -248,7 +260,7 @@ void loop() {
 
       //Step 6 Brick Pressing Main Cyl moves to T_ext + 1/2 sec compression delay and pressure release
   
-          while ((lowPressure() == true) && (autoMode() == true)) {
+          while ((lowPressure() == true) {
             previousMillis = millis();
             digitalWrite(SOLENOID_UP, HIGH);
           }
@@ -271,8 +283,6 @@ void loop() {
               maximum = max( mainCompTime,  mainCompTime);
               drift = maximum - minimum;
               if (drift > MAXDRIFT) {
-
-
                 while( true ) { //sleep in infinite loop }
               }
             }
