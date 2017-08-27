@@ -67,7 +67,7 @@ void setup() {
     }
          digitalWrite(SOLENOID_RIGHT, LOW);
 }
-         
+
    //Create initial button polling routine for a several seconds to check for thickness setting option?
    //Indicator lights would be useful for button selection.
    //Poll for button press(es) debounce and count. Need to write, copy, and/or point to var for use in loop?
@@ -87,19 +87,13 @@ void loop() {
 	word delayTime = 0;
 
 	  
-      //Step 1 Calibration Extend drawer Cyl Fully and measure T_ret at Presure sensor high
-
-       
-            //Retraction drawer Cyl RIGHT measure T_ret at Presure sensor high
+      //Step 1 Calibration Extend drawer Cylinder Fully
+  	 	  
+	  move(drawerExtend);
 	  
-	  /*
-	  Is it useful to write a function that takes parameters to specify cylinder, direction, HIGH/LOW, and millis duration values?
-	  Would require making vars for many current defines.
-	  Could pass move time and return new Time.
-	  4 bytes for solenoid directions
-	  bool for LOW/HIGH
+	  //Step 2 
 	  
-	  */
+	  
 	  
 /*	  
             while ((lowPressure() == true) {
