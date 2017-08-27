@@ -12,6 +12,8 @@
   Abe Anderson
   
   Unfamiliar with code structures? See https://www.arduino.cc/en/Reference/HomePage
+  
+  
 
   License:
   See GPLv3 license file in repo.
@@ -34,11 +36,12 @@
 #define RELEASE_PRESSURE_DELAY 100    //releases pressure from the drawer bottom after compression (default 100ms)
 #define K_A_MAIN 0.004  // T_e = T_c * (k_A)   for 1.25in x14in cylinder  (default 0.004)
 #define K_A_DRAWER 0.008 // T_e = T_c * (k_A)  for 2.75in x10in cylinder  (default 0.008)
-#define MAXDRIFT 50    //Sets maximum time difference in milliseconds from one cycle to the next for all steps to check for faults (default 5ms)
+#define MAXDRIFT 100    //Sets maximum time difference in milliseconds from one cycle to the next for all steps to check for faults (default 100ms)
 
 // custom structures, function declarations or prototypes
 bool lowPressure();    //function to read if pressure sensor is HIGH
-void driftCheck( unsigned long currentTime, unsigned long prevTime);
+void faultCheck( unsigned long currentTime, unsigned long prevTime);
+bool motion( byte cylinderDirection, word delayTime,
 
 
 void setup() {
@@ -81,26 +84,26 @@ void loop() {
 
   unsigned long previousMillis = 0;
 
-  static unsigned long drawerRetTime = 0;   //measured
-  static unsigned long drawerRetTimePre = 0;    //keep previous time of drawer Cyl Retraction Time to compare to check for  drift
+  static unsigned long drawerExtTime = 0;
+  static unsigned long drawerExtTimePre = 0;   //previous time  
 
-  static unsigned long mainRetTime = 0;    //first reatraction measured post manual brick compression and pre auto ejection
-  static unsigned long mainRetTimePre = 0;    //previous time
+//  static unsigned long drawerMidTime = 0;    //time for retraction from removal point to mid point calculated from step 1 then measured and compared at every cycle.
+//  static unsigned long drawerMidTimePre = 0;    //previous time
+	  
+//  static unsigned long drawerRetTime = 0;   //measured
+//  static unsigned long drawerRetTimePre = 0;    //keep previous time of drawer Cyl Retraction Time to compare to check for  drift
+
+//  static unsigned long mainRetTime = 0;    //
+//  static unsigned long mainRetTimePre = 0;    //previous time
   static unsigned long mainCalTime = 0;     //Calculated time for post calibration return of main to user preset
 
-  static unsigned long mainEjcTime = 0;   //time to eject brick
-  static unsigned long mainEjcTimePre = 0;    //previous time
+//  static unsigned long mainEjcTime = 0;   //time to eject brick
+//  static unsigned long mainEjcTimePre = 0;    //previous time
 
   static unsigned long mainCompTime = 0;   //measured
   static unsigned long mainCompTimePre = 0;    //keep running average of main Cyl Extension Time to compare to check for  drift
 
-  static unsigned long drawerExtTime = 0;
-  static unsigned long drawerExtTimePre = 0;   //previous time
-
-  static unsigned long drawerMidTime = 0;    //time for retraction from removal point to mid point calculated from step 1 then measured and compared at every cycle.
-  static unsigned long drawerMidTimePre = 0;    //previous time
-
-  static float kAMain = K_A_MAIN;   //multiplier Note: if 1 isnt accurate enough for high speeds 2 or 3 could be used instead as opposed to calculus?
+  static float kAMain = K_A_MAIN;
   static float kADrawer = K_A_DRAWER;
 
 
@@ -136,6 +139,17 @@ void loop() {
 
        
             //Retraction drawer Cyl RIGHT measure T_ret at Presure sensor high
+	  
+	  /*
+	  Is it useful to write a function that takes parameters to specify cylinder, direction, HIGH/LOW, and millis duration values?
+	  Would require making vars for many current defines.
+	  Could pass move time and return new Time.
+	  4 bytes for solenoid directions
+	  bool for LOW/HIGH
+	  
+	  */
+	  
+	  
             while ((lowPressure() == true) {
               previousMillis = millis();
               digitalWrite(SOLENOID_RIGHT, HIGH);
@@ -148,7 +162,7 @@ void loop() {
             }
             else {
               if (drawerExtTime != drawerExtTimePre) {
-                driftCheck( unsigned long drawerExtTime, unsigned long drawerExtTimePre);
+                faultCheck( unsigned long drawerExtTime, unsigned long drawerExtTimePre);
                 }
               }
             }
@@ -170,7 +184,7 @@ void loop() {
           }
           else {
             if (mainEjcTime != mainEjcTimePre) {
-              driftCheck( unsigned long currentTime, unsigned long prevTime);
+              faultCheck( unsigned long currentTime, unsigned long prevTime);
               }
             }
           }
@@ -190,7 +204,7 @@ void loop() {
           }
           else {
             if (drawerExtTime != drawerExtTimePre) {
-             driftCheck( unsigned long currentTime, unsigned long prevTime);
+             faultCheck( unsigned long currentTime, unsigned long prevTime);
               }
             }
           }
@@ -198,7 +212,7 @@ void loop() {
 
       //Step 4 Soil Load main Cyl moves DOWN/retracts and soil enters chamber
 
-          while ((lowPressure() == true) {
+          while (lowPressure() == true) {
             previousMillis = millis();
             while ((millis() - previousMillis) <= mainRetTime) {
               digitalWrite(SOLENOID_DOWN, HIGH);
@@ -212,14 +226,14 @@ void loop() {
           }
           else {
             if (mainRetTime != mainRetTimePre) {
-            driftCheck( unsigned long currentTime, unsigned long prevTime);
+            faultCheck( unsigned long currentTime, unsigned long prevTime);
               }
             }
           }
           mainRetTimePre = mainRetTime;
 
       //Step 5 Chamber/Drawer Closure drawer retraction time to midpoint is calculated from initial full contraction from the midpoint (step 1 measurement)
-          while (owPressure() == true) 
+          while (lowPressure() == true) 
             drawerMidTime = drawerExtTime / kADrawer ;
             previousMillis = millis();
             while ((millis() - previousMillis) <= drawerMidTime) {
@@ -232,7 +246,7 @@ void loop() {
           }
           else {
             if ( drawerMidTime !=  drawerMidTimePre) {
-            driftCheck( unsigned long currentTime, unsigned long prevTime);
+            faultCheck( unsigned long currentTime, unsigned long prevTime);
               }
             }
           }
@@ -240,7 +254,7 @@ void loop() {
 
       //Step 6 Brick Pressing Main Cyl moves to T_ext + 1/2 sec compression delay and pressure release
   
-          while ((lowPressure() == true) {
+          while (lowPressure() == true) {
             previousMillis = millis();
             digitalWrite(SOLENOID_UP, HIGH);
           }
@@ -259,7 +273,7 @@ void loop() {
           }
           else {
             if ( mainCompTime !=  mainCompTimePre) {
-              driftCheck( unsigned long currentTime, unsigned long prevTime);
+              faultCheck( unsigned long currentTime, unsigned long prevTime);
               }
             }
           }
@@ -288,7 +302,7 @@ bool lowPressure() {
 }
                  
 //Checks for excess drift in timing and enters infinte loop if to high stopping machine. Takes two millis time parameters as input.
-void driftCheck( unsigned long currentTime, unsigned long prevTime) {
+void faultCheck( unsigned long currentTime, unsigned long prevTime) {
   unsigned long minimum = 0;    //do math
   unsigned long maximum = 0;    //and compare values
   byte drift = 0;               //for timing drift tracking Is a byte to small? Does it need more than 250ms of variation?
@@ -296,6 +310,7 @@ void driftCheck( unsigned long currentTime, unsigned long prevTime) {
   minimum = min(currentTime, prevTime);
   maximum = max(currentTime, prevTime);
   drift = maximum - minimum;
+  //serialprint out drift var for trouble shooting
   if (drift > MAXDRIFT) {
     while( true ) { //sleep in infinite loop
     }
