@@ -41,7 +41,7 @@
 // custom structures, function declarations or prototypes
 bool lowPressure();    //function to read if pressure sensor is HIGH
 void faultCheck( unsigned long currentTime, unsigned long prevTime);
-bool move( byte cylinderDirection, word delayTime);
+bool move( byte cylinderDirection, word delayTime, byte thicknessDelay);
 
 
 void setup() {
@@ -68,10 +68,7 @@ void setup() {
          digitalWrite(SOLENOID_RIGHT, LOW);
 }
 
-   //Create initial button polling routine for a several seconds to check for thickness setting option?
-   //Indicator lights would be useful for button selection.
-   //Poll for button press(es) debounce and count. Need to write, copy, and/or point to var for use in loop?
-
+  
 void loop() {
   /*
     Auto mode starting assumptions
@@ -85,14 +82,30 @@ void loop() {
 	byte mainExtend = SOLENOID_UP;
 	byte mainContract = SOLENOID_DOWN;
 	word delayTime = 0;
-
+	static byte thicknessDelay = 0;
+	
+	//Create initial button polling routine for a several seconds to check for thickness setting option?
+	//Indicator lights would be useful for button selection.
+	//Poll for button press(es) debounce and count. Need to write, copy, and/or point to var for use in loop?
 	  
-      //Step 1 Calibration Extend drawer Cylinder Fully
+	/*
+	
+	if(digitalRead( THICKNESS_SELECT ) == true {
+	
+	}
+	
+	*/  
+	  
+    //Step 1 Calibration Extend drawer Cylinder Fully T_ext is measured
   	 	  
-	  move(drawerExtend);
+	move(drawerExtend);
 	  
-	  //Step 2 
-	  
+	//Step 2 Main Cyl moves down to allow soil loading
+	
+	move(mainContract, thicknessDelay);
+	
+	//Step 3
+	
 	  
 	  
 /*	  
@@ -273,7 +286,7 @@ void faultCheck( unsigned long currentTime, unsigned long prevTime) {
 }
 
 // Movement function passed value of cylinder direction and a delay time for variation required in some steps. Handles all timing internally.
-bool move( byte cylinderDirection, word delayTime) {
+bool move( byte cylinderDirection, word delayTime, byte thicknessDelay) {
   
   unsigned long currentTime = 0;
   unsigned long previousMillis = 0;
