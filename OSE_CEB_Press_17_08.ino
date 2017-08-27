@@ -58,7 +58,7 @@ void setup() {
   pinMode(PRESSURE_SENSOR, INPUT);
   digitalWrite(PRESSURE_SENSOR, INPUT_PULLUP);
 
-  //Step 1 Initialize  to start position retract main cyl for 1 sec to release pressue contract drawer cyl fully
+  //Initialize  to start position retract main cyl for 1 sec to release pressue contract drawer cylinder fully
   digitalWrite(SOLENOID_DOWN, HIGH);
   delay(1000);
   digitalWrite(SOLENOID_DOWN, LOW);
@@ -87,7 +87,7 @@ void loop() {
 	word delayTime = 0;
 
 	  
-      //Step 2 Calibration Extend drawer Cyl Fully and measure T_ret at Presure sensor high
+      //Step 1 Calibration Extend drawer Cyl Fully and measure T_ret at Presure sensor high
 
        
             //Retraction drawer Cyl RIGHT measure T_ret at Presure sensor high
@@ -101,7 +101,7 @@ void loop() {
 	  
 	  */
 	  
-	  
+/*	  
             while ((lowPressure() == true) {
               previousMillis = millis();
               digitalWrite(SOLENOID_RIGHT, HIGH);
@@ -121,9 +121,11 @@ void loop() {
           }
           drawerRetTimePre = drawerRetTime;
         }
+*/				   
 
       //Step 2 Ejection by extending main cyl UP until pressure sensor high measure T_ext
 
+/*
           while ((lowPressure() == true) {
             previousMillis = millis();
             digitalWrite(SOLENOID_UP, HIGH);
@@ -141,9 +143,10 @@ void loop() {
             }
           }
           mainEjcTimePre = mainEjcTime;
-
+*/
       //Step 3 Brick Removal 2nd Cyl extended LEFT until Presure sensor high
 
+/*
           while ((lowPressure() == true) {
             previousMillis = millis();
             digitalWrite(SOLENOID_LEFT, HIGH);
@@ -161,9 +164,10 @@ void loop() {
             }
           }
           drawerExtTimePre = drawerExtTime;
-
+*/
+				 
       //Step 4 Soil Load main Cyl moves DOWN/retracts and soil enters chamber
-
+/*
           while (lowPressure() == true) {
             previousMillis = millis();
             while ((millis() - previousMillis) <= mainRetTime) {
@@ -181,11 +185,12 @@ void loop() {
             faultCheck( unsigned long currentTime, unsigned long prevTime);
               }
             }
-          }
           mainRetTimePre = mainRetTime;
-
+*/
       //Step 5 Chamber/Drawer Closure drawer retraction time to midpoint is calculated from initial full contraction from the midpoint (step 1 measurement)
-          while (lowPressure() == true) 
+          
+				 /*
+				 while (lowPressure() == true) 
             drawerMidTime = drawerExtTime / kADrawer ;
             previousMillis = millis();
             while ((millis() - previousMillis) <= drawerMidTime) {
@@ -203,9 +208,11 @@ void loop() {
             }
           }
           drawerMidTimePre =  drawerMidTime;
-
+*/
+				 
       //Step 6 Brick Pressing Main Cyl moves to T_ext + 1/2 sec compression delay and pressure release
-  
+				 
+  /*
           while (lowPressure() == true) {
             previousMillis = millis();
             digitalWrite(SOLENOID_UP, HIGH);
@@ -232,6 +239,7 @@ void loop() {
           mainCompTimePre =  mainCompTime;
     }
   }
+  */
 }
 //end of main loop
 
@@ -271,7 +279,7 @@ void faultCheck( unsigned long currentTime, unsigned long prevTime) {
 }
 
 // Movement function passed value of cylinder direction and a delay time for variation required in some steps. Handles all timing internally.
-bool move( byte cylinderDirection, word delayTime)
+bool move( byte cylinderDirection, word delayTime) {
   
   unsigned long currentTime = 0;
   unsigned long previousMillis = 0;
@@ -309,17 +317,16 @@ bool move( byte cylinderDirection, word delayTime)
 //            stepTime() = currentTime;
             // maybe another separate function to manage times/steps and calcs?
           //return main cylinder to user set point
-          while ((lowPressure() == true) {
+          /*
+			while ((lowPressure() == true) {
             mainCalTime = mainRetTime * kAMain;
             previousMillis = millis();
             while ((millis() - previousMillis) < mainCalTime) {
               digitalWrite(SOLENOID_UP, HIGH);
             }
             digitalWrite(SOLENOID_UP, LOW);
-
-
-
-
-
-*/
-				 
+			  
+		  }
+		  */
+}
+		 
