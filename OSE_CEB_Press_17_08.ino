@@ -10,7 +10,8 @@
 
   Contributions by:
   Abe Anderson
-
+  
+  Unfamiliar with code structures? See https://www.arduino.cc/en/Reference/HomePage
 
   License:
   See GPLv3 license file in repo.
@@ -33,10 +34,12 @@
 #define RELEASE_PRESSURE_DELAY 100    //releases pressure from the drawer bottom after compression (default 100ms)
 #define K_A_MAIN 0.004  // T_e = T_c * (k_A)   for 1.25in x14in cylinder  (default 0.004)
 #define K_A_DRAWER 0.008 // T_e = T_c * (k_A)  for 2.75in x10in cylinder  (default 0.008)
-#define MAXDRIFT 5    //Sets maximum time difference in milliseconds from one cycle to the next for all steps to check for faults (default 5ms)
+#define MAXDRIFT 50    //Sets maximum time difference in milliseconds from one cycle to the next for all steps to check for faults (default 5ms)
 
 // custom structures, function declarations or prototypes
 bool lowPressure();    //function to read if pressure sensor is HIGH
+void driftCheck( unsigned long currentTime, unsigned long prevTime);
+
 
 void setup() {
 
@@ -99,9 +102,7 @@ void loop() {
 
   static float kAMain = K_A_MAIN;   //multiplier Note: if 1 isnt accurate enough for high speeds 2 or 3 could be used instead as opposed to calculus?
   static float kADrawer = K_A_DRAWER;
-  unsigned long minimum = 0;    //do math
-  unsigned long maximum = 0;    //and compare values
-  byte drift = 0;               //for timing drift tracking
+
 
 /*
 
@@ -142,16 +143,12 @@ void loop() {
             digitalWrite(SOLENOID_RIGHT, LOW);
             drawerRetTime = millis() - previousMillis;
 
-            if (drawerRetTimePre == 0) {
-              drawerRetTimePre = drawerRetTime;
+            if (drawerExtTimePre == 0) {
+              drawerExtTimePre = drawerExtTime;
             }
             else {
-              if (drawerRetTime != drawerRetTimePre) {
-                minimum = min(drawerRetTime, drawerRetTimePre);
-                maximum = max(drawerRetTime, drawerRetTimePre);
-                drift = maximum - minimum;
-                if (drift > MAXDRIFT) {
-                  while( true ) { //sleep in infinite loop }
+              if (drawerExtTime != drawerExtTimePre) {
+                driftCheck( unsigned long drawerExtTime, unsigned long drawerExtTimePre);
                 }
               }
             }
@@ -173,11 +170,7 @@ void loop() {
           }
           else {
             if (mainEjcTime != mainEjcTimePre) {
-              minimum = min(mainEjcTime, mainEjcTimePre);
-              maximum = max(mainEjcTime, mainEjcTime);
-              drift = maximum - minimum;
-              if (drift > MAXDRIFT) {
-                while( true ) { //sleep in infinite loop }
+              driftCheck( unsigned long currentTime, unsigned long prevTime);
               }
             }
           }
@@ -197,16 +190,11 @@ void loop() {
           }
           else {
             if (drawerExtTime != drawerExtTimePre) {
-              minimum = min(drawerExtTime, drawerExtTimePre);
-              maximum = max(drawerExtTime, drawerExtTime);
-              drift = maximum - minimum;
-              if (drift > MAXDRIFT) {
-                while( true ) { //sleep in infinite loop }
+             driftCheck( unsigned long currentTime, unsigned long prevTime);
               }
             }
           }
           drawerExtTimePre = drawerExtTime;
-
 
       //Step 4 Soil Load main Cyl moves DOWN/retracts and soil enters chamber
 
@@ -224,11 +212,7 @@ void loop() {
           }
           else {
             if (mainRetTime != mainRetTimePre) {
-              minimum = min(mainRetTime, mainRetTimePre);
-              maximum = max(mainRetTime, mainRetTime);
-              drift = maximum - minimum;
-              if (drift > MAXDRIFT) {
-                while( true ) { //sleep in infinite loop }
+            driftCheck( unsigned long currentTime, unsigned long prevTime);
               }
             }
           }
@@ -248,11 +232,7 @@ void loop() {
           }
           else {
             if ( drawerMidTime !=  drawerMidTimePre) {
-              minimum = min( drawerMidTime,  drawerMidTimePre);
-              maximum = max( drawerMidTime,  drawerMidTime);
-              drift = maximum - minimum;
-              if (drift > MAXDRIFT) {
-                while( true ) { //sleep in infinite loop }
+            driftCheck( unsigned long currentTime, unsigned long prevTime);
               }
             }
           }
@@ -279,25 +259,17 @@ void loop() {
           }
           else {
             if ( mainCompTime !=  mainCompTimePre) {
-              minimum = min( mainCompTime,  mainCompTimePre);
-              maximum = max( mainCompTime,  mainCompTime);
-              drift = maximum - minimum;
-              if (drift > MAXDRIFT) {
-                while( true ) { //sleep in infinite loop }
+              driftCheck( unsigned long currentTime, unsigned long prevTime);
               }
             }
           }
           mainCompTimePre =  mainCompTime;
-
-
     }
   }
 }
 //end of main loop
 
 //custom functions
-
-
 
 //reads pressure sensor state HIGH is false and LOW is true
 bool lowPressure() {
@@ -314,7 +286,20 @@ bool lowPressure() {
     return true;
   }
 }
-
-
-
+                 
+//Checks for excess drift in timing and enters infinte loop if to high stopping machine. Takes two millis time parameters as input.
+void driftCheck( unsigned long currentTime, unsigned long prevTime) {
+  unsigned long minimum = 0;    //do math
+  unsigned long maximum = 0;    //and compare values
+  byte drift = 0;               //for timing drift tracking Is a byte to small? Does it need more than 250ms of variation?
+            
+  minimum = min(currentTime, prevTime);
+  maximum = max(currentTime, prevTime);
+  drift = maximum - minimum;
+  if (drift > MAXDRIFT) {
+    while( true ) { //sleep in infinite loop
+    }
+  }
+  return;
+}
 
