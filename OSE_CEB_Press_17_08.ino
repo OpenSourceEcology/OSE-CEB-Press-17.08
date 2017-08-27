@@ -41,7 +41,7 @@
 // custom structures, function declarations or prototypes
 bool lowPressure();    //function to read if pressure sensor is HIGH
 void faultCheck( unsigned long currentTime, unsigned long prevTime);
-bool motion( byte cylinderDirection, word delayTime,
+bool move( byte cylinderDirection, word delayTime);
 
 
 void setup() {
@@ -81,31 +81,11 @@ void loop() {
     
    
   */
-
-  unsigned long previousMillis = 0;
-
-  static unsigned long drawerExtTime = 0;
-  static unsigned long drawerExtTimePre = 0;   //previous time  
-
-//  static unsigned long drawerMidTime = 0;    //time for retraction from removal point to mid point calculated from step 1 then measured and compared at every cycle.
-//  static unsigned long drawerMidTimePre = 0;    //previous time
 	  
-//  static unsigned long drawerRetTime = 0;   //measured
-//  static unsigned long drawerRetTimePre = 0;    //keep previous time of drawer Cyl Retraction Time to compare to check for  drift
-
-//  static unsigned long mainRetTime = 0;    //
-//  static unsigned long mainRetTimePre = 0;    //previous time
-  static unsigned long mainCalTime = 0;     //Calculated time for post calibration return of main to user preset
-
-//  static unsigned long mainEjcTime = 0;   //time to eject brick
-//  static unsigned long mainEjcTimePre = 0;    //previous time
-
-  static unsigned long mainCompTime = 0;   //measured
-  static unsigned long mainCompTimePre = 0;    //keep running average of main Cyl Extension Time to compare to check for  drift
-
-  static float kAMain = K_A_MAIN;
-  static float kADrawer = K_A_DRAWER;
-
+	byte drawerExtend = SOLENOID_LEFT;
+	byte drawerContract = SOLENOID_RIGHT;
+	byte mainExtend = SOLENOID_UP;
+	byte mainContract = SOLENOID_DOWN;
 
 /*
 
@@ -317,4 +297,30 @@ void faultCheck( unsigned long currentTime, unsigned long prevTime) {
   }
   return;
 }
+
+// Movement function passed value of cylinder direction and a delay time for variation required in some steps. Handles all timing internally.
+bool move( byte cylinderDirection, word delayTime)
+  unsigned long previousMillis = 0;
+
+  static unsigned long drawerExtTime = 0;
+  static unsigned long drawerExtTimePre = 0;   //previous time  
+
+//  static unsigned long drawerMidTime = 0;    //time for retraction from removal point to mid point calculated from step 1 then measured and compared at every cycle.
+//  static unsigned long drawerMidTimePre = 0;    //previous time
+	  
+//  static unsigned long drawerRetTime = 0;   //measured
+//  static unsigned long drawerRetTimePre = 0;    //keep previous time of drawer Cyl Retraction Time to compare to check for  drift
+
+//  static unsigned long mainRetTime = 0;    //
+//  static unsigned long mainRetTimePre = 0;    //previous time
+  static unsigned long mainCalTime = 0;     //Calculated time for post calibration return of main to user preset
+
+//  static unsigned long mainEjcTime = 0;   //time to eject brick
+//  static unsigned long mainEjcTimePre = 0;    //previous time
+
+  static unsigned long mainCompTime = 0;   //measured
+  static unsigned long mainCompTimePre = 0;    //keep running average of main Cyl Extension Time to compare to check for  drift
+
+  static float kAMain = K_A_MAIN;
+  static float kADrawer = K_A_DRAWER;
 
