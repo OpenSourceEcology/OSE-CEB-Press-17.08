@@ -78,43 +78,15 @@ void loop() {
     User has manually tested system for proper function
     and it is ready to extend the drawer measure time
     and
-    
-   
   */
 	  
 	byte drawerExtend = SOLENOID_LEFT;
 	byte drawerContract = SOLENOID_RIGHT;
 	byte mainExtend = SOLENOID_UP;
 	byte mainContract = SOLENOID_DOWN;
+	word delayTime = 0;
 
-/*
-
-   
-          while (lowPressure() == true) {
-              previousMillis = millis();
-              digitalWrite(SOLENOID_DOWN, HIGH);
-            }
-            digitalWrite(SOLENOID_DOWN, LOW);
-            mainRetTime = millis() - previousMillis;
-            mainRetTimePre = mainRetTime;
-            
-          //return main cylinder to user set point
-          while ((lowPressure() == true) {
-            mainCalTime = mainRetTime * kAMain;
-            previousMillis = millis();
-            while ((millis() - previousMillis) < mainCalTime) {
-              digitalWrite(SOLENOID_UP, HIGH);
-            }
-            digitalWrite(SOLENOID_UP, LOW);
-
-
-
-
-
-*/
-    
-    
-    
+	  
       //Step 2 Calibration Extend drawer Cyl Fully and measure T_ret at Presure sensor high
 
        
@@ -300,23 +272,24 @@ void faultCheck( unsigned long currentTime, unsigned long prevTime) {
 
 // Movement function passed value of cylinder direction and a delay time for variation required in some steps. Handles all timing internally.
 bool move( byte cylinderDirection, word delayTime)
+  
   unsigned long previousMillis = 0;
 
   static unsigned long drawerExtTime = 0;
   static unsigned long drawerExtTimePre = 0;   //previous time  
 
-//  static unsigned long drawerMidTime = 0;    //time for retraction from removal point to mid point calculated from step 1 then measured and compared at every cycle.
-//  static unsigned long drawerMidTimePre = 0;    //previous time
+  static unsigned long drawerMidTime = 0;    //time for retraction from removal point to mid point calculated from step 1 then measured and compared at every cycle.
+  static unsigned long drawerMidTimePre = 0;    //previous time
 	  
-//  static unsigned long drawerRetTime = 0;   //measured
-//  static unsigned long drawerRetTimePre = 0;    //keep previous time of drawer Cyl Retraction Time to compare to check for  drift
+  static unsigned long drawerRetTime = 0;   //measured
+  static unsigned long drawerRetTimePre = 0;    //keep previous time of drawer Cyl Retraction Time to compare to check for  drift
 
-//  static unsigned long mainRetTime = 0;    //
-//  static unsigned long mainRetTimePre = 0;    //previous time
+  static unsigned long mainRetTime = 0;    //
+  static unsigned long mainRetTimePre = 0;    //previous time
   static unsigned long mainCalTime = 0;     //Calculated time for post calibration return of main to user preset
 
-//  static unsigned long mainEjcTime = 0;   //time to eject brick
-//  static unsigned long mainEjcTimePre = 0;    //previous time
+  static unsigned long mainEjcTime = 0;   //time to eject brick
+  static unsigned long mainEjcTimePre = 0;    //previous time
 
   static unsigned long mainCompTime = 0;   //measured
   static unsigned long mainCompTimePre = 0;    //keep running average of main Cyl Extension Time to compare to check for  drift
@@ -324,3 +297,28 @@ bool move( byte cylinderDirection, word delayTime)
   static float kAMain = K_A_MAIN;
   static float kADrawer = K_A_DRAWER;
 
+ 
+				 
+          while (lowPressure() == true) {
+              previousMillis = millis();
+              digitalWrite(SOLENOID_DOWN, HIGH);
+            }
+            digitalWrite(SOLENOID_DOWN, LOW);
+            mainRetTime = millis() - previousMillis;
+            mainRetTimePre = mainRetTime;
+            
+          //return main cylinder to user set point
+          while ((lowPressure() == true) {
+            mainCalTime = mainRetTime * kAMain;
+            previousMillis = millis();
+            while ((millis() - previousMillis) < mainCalTime) {
+              digitalWrite(SOLENOID_UP, HIGH);
+            }
+            digitalWrite(SOLENOID_UP, LOW);
+
+
+
+
+
+*/
+				 
