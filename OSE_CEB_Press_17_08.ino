@@ -273,6 +273,7 @@ void faultCheck( unsigned long currentTime, unsigned long prevTime) {
 // Movement function passed value of cylinder direction and a delay time for variation required in some steps. Handles all timing internally.
 bool move( byte cylinderDirection, word delayTime)
   
+  unsigned long currentTime = 0;
   unsigned long previousMillis = 0;
 
   static unsigned long drawerExtTime = 0;
@@ -301,12 +302,12 @@ bool move( byte cylinderDirection, word delayTime)
 				 
           while (lowPressure() == true) {
               previousMillis = millis();
-              digitalWrite(SOLENOID_DOWN, HIGH);
+              digitalWrite(cylinderDirection, HIGH);
             }
-            digitalWrite(SOLENOID_DOWN, LOW);
-            mainRetTime = millis() - previousMillis;
-            mainRetTimePre = mainRetTime;
-            
+            digitalWrite(cylinderDirection, LOW);
+            currentTime = millis() - previousMillis;
+//            stepTime() = currentTime;
+            // maybe another separate function to manage times/steps and calcs?
           //return main cylinder to user set point
           while ((lowPressure() == true) {
             mainCalTime = mainRetTime * kAMain;
