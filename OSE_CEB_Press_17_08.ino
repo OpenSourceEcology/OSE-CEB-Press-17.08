@@ -72,13 +72,7 @@ void setup() {
 
   
 void loop() {
-  /*
-    Auto mode starting assumptions
-    User has manually tested system for proper function
-    and it is ready to extend the drawer measure time
-    and
-  */
-	  
+  	  
 	byte drawerExtend = SOLENOID_LEFT;
 	byte drawerContract = SOLENOID_RIGHT;
 	byte mainExtend = SOLENOID_UP;
@@ -89,47 +83,32 @@ void loop() {
 	//Create initial button polling routine for a several seconds to check for thickness setting option?
 	//Indicator lights would be useful for button selection.
 	//Poll for button press(es) debounce and count. Need to write, copy, and/or point to var for use in loop?
-	  
 	/*
-	
 	if(digitalRead( THICKNESS_SELECT ) == true {
 	//debounce
 	thicknessDelay = 3;
 	//count presses correlate with 3, 2, & 4. use as divider for 3 in, 2 in, and 1 in block.
-	
 	}
-	
 	*/  
 	  
     //Step 1 Calibration Extend drawer Cylinder Fully T_ext is measured
-  	 	  
-	move(drawerExtend);
-	  
+  	move(drawerExtend); 
 	//Step 2 Main Cyl moves down to allow soil loading measure T_con time
-	
 	move(mainContract, thicknessDelay);
-	
 	//Step 3 Contract drawer cylinder half way to close compression chamber
 	delayMod = 2;
 	move(drawerContract, delayMod);
-	  
 	//Step 4 compression by main cyl with 1 sec
 	delayMod = COMPRESS_DELAY;
 	move(mainExtend, delayMod);
-	
 	//Step 5 main Cyl release pressure
-	delayMod = COMPRESS_DELAY;
+	delayMod = COMPRESS_DELAY;		//may need to make separate release and compression delay vars
 	move(mainExtend, delayMod);
-	
 	//Step 6 drawer Cyl contracts opening chamber
 	move(drawerContract);
-	  
 	//Step 7 main moves brick up to eject
 	move(mainExtend);
-	
 	//Loops back to step 1 to eject brick
-	  
-	  
 }
 //end of main loop
 
@@ -187,8 +166,8 @@ bool move( byte cylinderDirection, word delayMod, byte thicknessDelay) {
 //  static unsigned long mainRetTimePre = 0;    //previous time
   static unsigned long mainCalTime = 0;     //Calculated time for post calibration return of main to user preset
 
-  static unsigned long mainEjcTime = 0;   //time to eject brick
-  static unsigned long mainEjcTimePre = 0;    //previous time
+//  static unsigned long mainEjcTime = 0;   //time to eject brick
+//  static unsigned long mainEjcTimePre = 0;    //previous time
 
   static unsigned long mainCompTime = 0;   //measured
   static unsigned long mainCompTimePre = 0;    //keep running average of main Cyl Extension Time to compare to check for  drift
@@ -214,8 +193,6 @@ bool move( byte cylinderDirection, word delayMod, byte thicknessDelay) {
               digitalWrite(SOLENOID_UP, HIGH);
             }
             digitalWrite(SOLENOID_UP, LOW);
-			  
 		  }
 		  */
 }
-		 
