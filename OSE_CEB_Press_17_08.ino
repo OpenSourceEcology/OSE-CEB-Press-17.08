@@ -1,4 +1,4 @@
-/* Open Source Ecology CEB Press v16.09 v8 Teensy Microcontroller code for Auto mode operation
+/* Open Source Ecology CEB Press v17.09 v8 Teensy Microcontroller code for Auto mode operation
   Switches FET's HIGH/LOW to control two 3 position hydraulic solenoids,
   measures piston motion time relative to pressure sensor trigger,
   and repeats cycle while auto calibrating timing from previous cycles and startup positions.
@@ -10,6 +10,7 @@
 
   Contributions by:
   Abe Anderson
+  http://opensourceecology.org/wiki/AbeAnd_Log
   
   Unfamiliar with code structures? See https://www.arduino.cc/en/Reference/HomePage
   
@@ -116,7 +117,17 @@ void loop() {
 	delayMod = COMPRESS_DELAY;
 	move(mainExtend, delayMod);
 	
-	//Step 5 
+	//Step 5 main Cyl release pressure
+	delayMod = COMPRESS_DELAY;
+	move(mainExtend, delayMod);
+	
+	//Step 6 drawer Cyl contracts opening chamber
+	move(drawerContract);
+	  
+	//Step 7 main moves brick up to eject
+	move(mainExtend);
+	
+	//Loops back to step 1 to eject brick
 	  
 	  
 }
@@ -169,11 +180,11 @@ bool move( byte cylinderDirection, word delayMod, byte thicknessDelay) {
   static unsigned long drawerMidTime = 0;    //time for retraction from removal point to mid point calculated from step 1 then measured and compared at every cycle.
   static unsigned long drawerMidTimePre = 0;    //previous time
 	  
-  static unsigned long drawerRetTime = 0;   //measured
-  static unsigned long drawerRetTimePre = 0;    //keep previous time of drawer Cyl Retraction Time to compare to check for  drift
+//  static unsigned long drawerRetTime = 0;   //measured
+//  static unsigned long drawerRetTimePre = 0;    //keep previous time of drawer Cyl Retraction Time to compare to check for  drift
 
-  static unsigned long mainRetTime = 0;    //
-  static unsigned long mainRetTimePre = 0;    //previous time
+//  static unsigned long mainRetTime = 0;    //
+//  static unsigned long mainRetTimePre = 0;    //previous time
   static unsigned long mainCalTime = 0;     //Calculated time for post calibration return of main to user preset
 
   static unsigned long mainEjcTime = 0;   //time to eject brick
@@ -185,8 +196,7 @@ bool move( byte cylinderDirection, word delayMod, byte thicknessDelay) {
   static float kAMain = K_A_MAIN;
   static float kADrawer = K_A_DRAWER;
 
- 
-				 
+	  
           while (lowPressure() == true) {
               previousMillis = millis();
               digitalWrite(cylinderDirection, HIGH);
