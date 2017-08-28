@@ -13,16 +13,15 @@
   
   Unfamiliar with code structures? See https://www.arduino.cc/en/Reference/HomePage
   
-  
-
   License:
   See GPLv3 license file in repo.
 */
 
-
 //defines to make it easier for non coders to make adjustments for troubleshooting and custom changes
 
-#define SOLENOID_RIGHT 5   //swap these pin numbers for wire inversion      (deafult pin 5)
+#define THICKNESS_SELECT 40		//Input Button for thickness selection		(default pin 40?)
+
+#define SOLENOID_RIGHT 5   //swap these pin numbers for wire inversion      (default pin 5)
 #define SOLENOID_LEFT 4    //    (default pin 4)
 
 #define SOLENOID_DOWN 15    //swap these pin numbers for wire inversion   (default pin 15)
@@ -32,7 +31,7 @@
 
 #define SWITCH_DEBOUNCE 3 //milliseconds to delay for switch debounce
 #define PRESSURE_SENSOR_DEBOUNCE 20 //milliseconds to delay for pressure sensor debounce
-#define COMPRESS_DELAY 500  // 1/2 sec extra to compress brick via main Cyl (default 500ms)
+#define COMPRESS_DELAY 1000  // 1 sec extra to compress brick via main Cyl (default 1000ms)
 #define RELEASE_PRESSURE_DELAY 100    //releases pressure from the drawer bottom after compression (default 100ms)
 #define K_A_MAIN 0.004  // T_e = T_c * (k_A)   for 1.25in x14in cylinder  (default 0.004)
 #define K_A_DRAWER 0.008 // T_e = T_c * (k_A)  for 2.75in x10in cylinder  (default 0.008)
@@ -41,12 +40,14 @@
 // custom structures, function declarations or prototypes
 bool lowPressure();    //function to read if pressure sensor is HIGH
 void faultCheck( unsigned long currentTime, unsigned long prevTime);
-bool move( byte cylinderDirection, word delayTime, byte thicknessDelay);
+bool move( byte cylinderDirection, word delayMod, byte thicknessDelay);
 
 
 void setup() {
 
   //initialize pin I/O Inputs use internal resistor pullups where needed and outputs get set low to prevent glitches while booting
+  //pingMode(THICKNESS_SELECT, INPUT);
+  //digitalWrite(THICKNESS_SELECT, INPUT_PULLUP);
   pinMode(SOLENOID_RIGHT, OUTPUT);
   digitalWrite(SOLENOID_RIGHT, LOW);
   pinMode(SOLENOID_LEFT, OUTPUT);
@@ -81,8 +82,8 @@ void loop() {
 	byte drawerContract = SOLENOID_RIGHT;
 	byte mainExtend = SOLENOID_UP;
 	byte mainContract = SOLENOID_DOWN;
-	word delayTime = 0;
-	static byte thicknessDelay = 0;
+	word delayMod = 0;		
+	static byte thicknessDelay = 1;		//used for thickness button input selection
 	
 	//Create initial button polling routine for a several seconds to check for thickness setting option?
 	//Indicator lights would be useful for button selection.
@@ -91,6 +92,9 @@ void loop() {
 	/*
 	
 	if(digitalRead( THICKNESS_SELECT ) == true {
+	//debounce
+	thicknessDelay = 3;
+	//count presses correlate with 3, 2, & 4. use as divider for 3 in, 2 in, and 1 in block.
 	
 	}
 	
@@ -100,153 +104,21 @@ void loop() {
   	 	  
 	move(drawerExtend);
 	  
-	//Step 2 Main Cyl moves down to allow soil loading
+	//Step 2 Main Cyl moves down to allow soil loading measure T_con time
 	
 	move(mainContract, thicknessDelay);
 	
-	//Step 3
+	//Step 3 Contract drawer cylinder half way to close compression chamber
+	delayMod = 2;
+	move(drawerContract, delayMod);
+	  
+	//Step 4 compression by main cyl with 1 sec
+	delayMod = COMPRESS_DELAY;
+	move(mainExtend, delayMod);
 	
+	//Step 5 
 	  
 	  
-/*	  
-            while ((lowPressure() == true) {
-              previousMillis = millis();
-              digitalWrite(SOLENOID_RIGHT, HIGH);
-            }
-            digitalWrite(SOLENOID_RIGHT, LOW);
-            drawerRetTime = millis() - previousMillis;
-
-            if (drawerExtTimePre == 0) {
-              drawerExtTimePre = drawerExtTime;
-            }
-            else {
-              if (drawerExtTime != drawerExtTimePre) {
-                faultCheck( unsigned long drawerExtTime, unsigned long drawerExtTimePre);
-                }
-              }
-            }
-          }
-          drawerRetTimePre = drawerRetTime;
-        }
-*/				   
-
-      //Step 2 Ejection by extending main cyl UP until pressure sensor high measure T_ext
-
-/*
-          while ((lowPressure() == true) {
-            previousMillis = millis();
-            digitalWrite(SOLENOID_UP, HIGH);
-          }
-          digitalWrite(SOLENOID_UP, LOW);
-          mainEjcTime = millis() - previousMillis;
-
-          if (mainEjcTimePre == 0) {
-            mainEjcTimePre = mainEjcTime;
-          }
-          else {
-            if (mainEjcTime != mainEjcTimePre) {
-              faultCheck( unsigned long currentTime, unsigned long prevTime);
-              }
-            }
-          }
-          mainEjcTimePre = mainEjcTime;
-*/
-      //Step 3 Brick Removal 2nd Cyl extended LEFT until Presure sensor high
-
-/*
-          while ((lowPressure() == true) {
-            previousMillis = millis();
-            digitalWrite(SOLENOID_LEFT, HIGH);
-          }
-          digitalWrite(SOLENOID_LEFT, LOW);
-          drawerExtTime = millis() - previousMillis;
-
-          if (drawerExtTimePre == 0) {
-            drawerExtTimePre = drawerExtTime;
-          }
-          else {
-            if (drawerExtTime != drawerExtTimePre) {
-             faultCheck( unsigned long currentTime, unsigned long prevTime);
-              }
-            }
-          }
-          drawerExtTimePre = drawerExtTime;
-*/
-				 
-      //Step 4 Soil Load main Cyl moves DOWN/retracts and soil enters chamber
-/*
-          while (lowPressure() == true) {
-            previousMillis = millis();
-            while ((millis() - previousMillis) <= mainRetTime) {
-              digitalWrite(SOLENOID_DOWN, HIGH);
-            }
-            digitalWrite(SOLENOID_DOWN, LOW);
-            mainRetTime = millis() - previousMillis;
-          }
-
-          if (mainRetTimePre == 0) {
-            mainRetTimePre = mainRetTime;
-          }
-          else {
-            if (mainRetTime != mainRetTimePre) {
-            faultCheck( unsigned long currentTime, unsigned long prevTime);
-              }
-            }
-          mainRetTimePre = mainRetTime;
-*/
-      //Step 5 Chamber/Drawer Closure drawer retraction time to midpoint is calculated from initial full contraction from the midpoint (step 1 measurement)
-          
-				 /*
-				 while (lowPressure() == true) 
-            drawerMidTime = drawerExtTime / kADrawer ;
-            previousMillis = millis();
-            while ((millis() - previousMillis) <= drawerMidTime) {
-              digitalWrite(SOLENOID_RIGHT, HIGH);
-            }
-            digitalWrite(SOLENOID_RIGHT, LOW);
-          }
-          if ( drawerMidTimePre == 0) {
-            drawerMidTimePre =  drawerMidTime;
-          }
-          else {
-            if ( drawerMidTime !=  drawerMidTimePre) {
-            faultCheck( unsigned long currentTime, unsigned long prevTime);
-              }
-            }
-          }
-          drawerMidTimePre =  drawerMidTime;
-*/
-				 
-      //Step 6 Brick Pressing Main Cyl moves to T_ext + 1/2 sec compression delay and pressure release
-				 
-  /*
-          while (lowPressure() == true) {
-            previousMillis = millis();
-            digitalWrite(SOLENOID_UP, HIGH);
-          }
-          previousMillis = millis() - previousMillis;
-          mainCompTime = previousMillis;
-          delay(COMPRESS_DELAY);
-          digitalWrite(SOLENOID_UP, LOW);
-
-          //release pressure from drawer
-          digitalWrite(SOLENOID_DOWN, HIGH);
-          delay(RELEASE_PRESSURE_DELAY);
-          digitalWrite(SOLENOID_DOWN, LOW);
-
-          if ( mainCompTimePre == 0) {
-            mainCompTimePre =  mainCompTime;
-          }
-          else {
-            if ( mainCompTime !=  mainCompTimePre) {
-              faultCheck( unsigned long currentTime, unsigned long prevTime);
-              }
-            }
-          }
-          mainCompTimePre =  mainCompTime;
-    }
-  }
-  */
 }
 //end of main loop
 
@@ -285,8 +157,8 @@ void faultCheck( unsigned long currentTime, unsigned long prevTime) {
   return;
 }
 
-// Movement function passed value of cylinder direction and a delay time for variation required in some steps. Handles all timing internally.
-bool move( byte cylinderDirection, word delayTime, byte thicknessDelay) {
+// Movement function passes value of cylinder direction, optional thickness delay and a delay time for variation required in some steps. Handles all timing internally.
+bool move( byte cylinderDirection, word delayMod, byte thicknessDelay) {
   
   unsigned long currentTime = 0;
   unsigned long previousMillis = 0;
