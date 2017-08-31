@@ -35,7 +35,7 @@
 #define RELEASE_PRESSURE_DELAY 100    //releases pressure from the drawer bottom after compression (default 100ms)
 #define K_A_MAIN 0.004  // T_e = T_c * (k_A)   for 1.25in x14in cylinder  (default 0.004)
 #define K_A_DRAWER 0.008 // T_e = T_c * (k_A)  for 2.75in x10in cylinder  (default 0.008)
-#define MAXDRIFT 5    //Sets maximum time difference in milliseconds from one cycle to the next for all steps to check for faults (default 5ms)
+#define MAXDRIFT 500    //Sets maximum time difference in milliseconds from one cycle to the next for all steps to check for faults (default 500ms)
 
 // custom structures, function declarations or prototypes
 bool lowPressure();    //function to read if pressure sensor is HIGH
@@ -75,14 +75,12 @@ void loop() {
   static unsigned long drawerExtTime = 0;
   static unsigned long drawerExtTimePre = 0;   //previous time
 
-  static float kAMain = K_A_MAIN;   //multiplier Note: if 1 isnt accurate enough for high speeds 2 or 3 could be used instead as opposed to calculus?
   static float kADrawer = K_A_DRAWER;
   unsigned long minimum = 0;    //do math
   unsigned long maximum = 0;    //and compare values
   word drift = 0;               //for timing drift tracking
 
   //Step 1 Calibration Extend drawer Cylinder Fully T_ext is measured
-
   while (lowPressure() == true) {
     previousMillis = millis();
     digitalWrite(SOLENOID_LEFT, HIGH);
@@ -107,7 +105,6 @@ void loop() {
   drawerExtTimePre = drawerExtTime;
 
   //Step 2 Main Cyl moves down to allow soil loading measure T_con time
-
     while (lowPressure() == true) {
       digitalWrite(SOLENOID_DOWN, HIGH);
     }
@@ -115,9 +112,8 @@ void loop() {
   }
 
   //Step 3 Contract drawer cylinder half way to close compression chamber
-
   while (lowPressure() == true) {
-    drawerMidTime = drawerExtTime / kADrawer ;
+    //drawerMidTime = drawerExtTime / kADrawer ;
     previousMillis = millis();
     while ((millis() - previousMillis) <= (drawerExtTime/2)) {
       digitalWrite(SOLENOID_RIGHT, HIGH);
@@ -126,20 +122,13 @@ void loop() {
   }
 
   //Step 4 compression by main cyl with 1 sec
-
   while (lowPressure() == true) {
-    previousMillis = millis();
     digitalWrite(SOLENOID_UP, HIGH);
   }
-  previousMillis = millis() - previousMillis;
-  mainCompTime = previousMillis;
   delay(COMPRESS_DELAY);
   digitalWrite(SOLENOID_UP, LOW);
 
-
   //Step 5 main Cyl release pressure
-
-    //release pressure from drawer
   digitalWrite(SOLENOID_DOWN, HIGH);
   delay(RELEASE_PRESSURE_DELAY);
   digitalWrite(SOLENOID_DOWN, LOW);
@@ -151,12 +140,10 @@ void loop() {
   digitalWrite(SOLENOID_DOWN, LOW);
 
   //Step 7 main moves brick up to eject
-
   while (lowPressure() == true) {
     digitalWrite(SOLENOID_UP, HIGH);
   }
   digitalWrite(SOLENOID_UP, LOW);
-
 
   //Loops back to step 1 to eject brick
 }
