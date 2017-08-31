@@ -64,7 +64,6 @@ void setup() {
     digitalWrite(SOLENOID_RIGHT, HIGH);
   }
   digitalWrite(SOLENOID_RIGHT, LOW);
-
 }
 
 void loop() {
@@ -244,40 +243,6 @@ void loop() {
   mainEjcTimePre = mainEjcTime;
 
   //Loops back to step 1 to eject brick
-
-  //return main cylinder to user set point
-  while (lowPressure() == true) {
-    mainCalTime = mainRetTime * kAMain;
-    previousMillis = millis();
-    while ((millis() - previousMillis) < mainCalTime) {
-      digitalWrite(SOLENOID_UP, HIGH);
-    }
-    digitalWrite(SOLENOID_UP, LOW);
-
-    //Retraction drawer Cyl RIGHT measure T_ret at Presure sensor high
-    while (lowPressure() == true) {
-      previousMillis = millis();
-      digitalWrite(SOLENOID_RIGHT, HIGH);
-    }
-    digitalWrite(SOLENOID_RIGHT, LOW);
-    drawerRetTime = millis() - previousMillis;
-
-    if (drawerRetTimePre == 0) {
-      drawerRetTimePre = drawerRetTime;
-    }
-    else {
-      if (drawerRetTime != drawerRetTimePre) {
-        minimum = min(drawerRetTime, drawerRetTimePre);
-        maximum = max(drawerRetTime, drawerRetTimePre);
-        drift = maximum - minimum;
-        if (drift > MAXDRIFT) {
-          while( true ) { //sleep in infinite loop
-          }
-        }
-      }
-      drawerRetTimePre = drawerRetTime;
-    }
-  }
 }
 //end of main loop
 
