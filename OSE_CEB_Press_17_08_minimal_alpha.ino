@@ -18,7 +18,6 @@
  See GPLv3 license file in repo.
  */
 
-
 //defines to make it easier for non coders to make adjustments for troubleshooting and custom changes
 
 #define SOLENOID_RIGHT 5   //swap these pin numbers for wire inversion      (deafult pin 5)
@@ -74,9 +73,6 @@ void loop() {
 
 
   unsigned long previousMillis = 0;
-
-  static unsigned long drawerRetTime = 0;   //measured
-  static unsigned long drawerRetTimePre = 0;    //keep previous time of drawer Cyl Retraction Time to compare to check for  drift
 
   static unsigned long mainRetTime = 0;    //first reatraction measured post manual brick compression and pre auto ejection
   static unsigned long mainRetTimePre = 0;    //previous time
