@@ -70,31 +70,16 @@ void loop() {
 
   //Auto mode
 
-
   unsigned long previousMillis = 0;
-
-  static unsigned long mainRetTime = 0;    //first reatraction measured post manual brick compression and pre auto ejection
-  static unsigned long mainRetTimePre = 0;    //previous time
-  static unsigned long mainCalTime = 0;     //Calculated time for post calibration return of main to user preset
-
-  static unsigned long mainEjcTime = 0;   //time to eject brick
-  static unsigned long mainEjcTimePre = 0;    //previous time
-
-  static unsigned long mainCompTime = 0;   //measured
-  static unsigned long mainCompTimePre = 0;    //keep running average of main Cyl Extension Time to compare to check for  drift
 
   static unsigned long drawerExtTime = 0;
   static unsigned long drawerExtTimePre = 0;   //previous time
-
-  static unsigned long drawerMidTime = 0;    //time for retraction from removal point to mid point calculated from step 1 then measured and compared at every cycle.
-  static unsigned long drawerMidTimePre = 0;    //previous time
 
   static float kAMain = K_A_MAIN;   //multiplier Note: if 1 isnt accurate enough for high speeds 2 or 3 could be used instead as opposed to calculus?
   static float kADrawer = K_A_DRAWER;
   unsigned long minimum = 0;    //do math
   unsigned long maximum = 0;    //and compare values
-  byte drift = 0;               //for timing drift tracking
-
+  word drift = 0;               //for timing drift tracking
 
   //Step 1 Calibration Extend drawer Cylinder Fully T_ext is measured
 
@@ -124,54 +109,20 @@ void loop() {
   //Step 2 Main Cyl moves down to allow soil loading measure T_con time
 
     while (lowPressure() == true) {
-    previousMillis = millis();
-    while ((millis() - previousMillis) <= mainRetTime) {
       digitalWrite(SOLENOID_DOWN, HIGH);
     }
     digitalWrite(SOLENOID_DOWN, LOW);
-    mainRetTime = millis() - previousMillis;
   }
-
-  if (mainRetTimePre == 0) {
-    mainRetTimePre = mainRetTime;
-  }
-  else {
-    if (mainRetTime != mainRetTimePre) {
-      minimum = min(mainRetTime, mainRetTimePre);
-      maximum = max(mainRetTime, mainRetTime);
-      drift = maximum - minimum;
-      if (drift > MAXDRIFT) {
-        while( true ) { //sleep in infinite loop
-        }
-      }
-    }
-  }
-  mainRetTimePre = mainRetTime;
 
   //Step 3 Contract drawer cylinder half way to close compression chamber
 
   while (lowPressure() == true) {
     drawerMidTime = drawerExtTime / kADrawer ;
     previousMillis = millis();
-    while ((millis() - previousMillis) <= drawerMidTime) {
+    while ((millis() - previousMillis) <= (drawerExtTime/2)) {
       digitalWrite(SOLENOID_RIGHT, HIGH);
     }
     digitalWrite(SOLENOID_RIGHT, LOW);
-  }
-  if ( drawerMidTimePre == 0) {
-    drawerMidTimePre =  drawerMidTime;
-  }
-  else {
-    if ( drawerMidTime !=  drawerMidTimePre) {
-      minimum = min( drawerMidTime,  drawerMidTimePre);
-      maximum = max( drawerMidTime,  drawerMidTime);
-      drift = maximum - minimum;
-      if (drift > MAXDRIFT) {
-        while( true ) { //sleep in infinite loop
-        }
-      }
-      drawerMidTimePre =  drawerMidTime;
-    }
   }
 
   //Step 4 compression by main cyl with 1 sec
@@ -185,21 +136,6 @@ void loop() {
   delay(COMPRESS_DELAY);
   digitalWrite(SOLENOID_UP, LOW);
 
-  if ( mainCompTimePre == 0) {
-    mainCompTimePre =  mainCompTime;
-  }
-  else {
-    if ( mainCompTime !=  mainCompTimePre) {
-      minimum = min( mainCompTime,  mainCompTimePre);
-      maximum = max( mainCompTime,  mainCompTime);
-      drift = maximum - minimum;
-      if (drift > MAXDRIFT) {
-        while( true ) { //sleep in infinite loop
-        }
-      }
-    }
-  }
-  mainCompTimePre =  mainCompTime;
 
   //Step 5 main Cyl release pressure
 
@@ -210,37 +146,17 @@ void loop() {
 
   //Step 6 drawer Cyl contracts opening chamber
   while (lowPressure() == true) {
-    previousMillis = millis();
     digitalWrite(SOLENOID_DOWN, HIGH);
   }
   digitalWrite(SOLENOID_DOWN, LOW);
-  mainRetTime = millis() - previousMillis;
-  mainRetTimePre = mainRetTime;
 
   //Step 7 main moves brick up to eject
 
   while (lowPressure() == true) {
-    previousMillis = millis();
     digitalWrite(SOLENOID_UP, HIGH);
   }
   digitalWrite(SOLENOID_UP, LOW);
-  mainEjcTime = millis() - previousMillis;
 
-  if (mainEjcTimePre == 0) {
-    mainEjcTimePre = mainEjcTime;
-  }
-  else {
-    if (mainEjcTime != mainEjcTimePre) {
-      minimum = min(mainEjcTime, mainEjcTimePre);
-      maximum = max(mainEjcTime, mainEjcTime);
-      drift = maximum - minimum;
-      if (drift > MAXDRIFT) {
-        while( true ) { //sleep in infinite loop
-        }
-      }
-    }
-  }
-  mainEjcTimePre = mainEjcTime;
 
   //Loops back to step 1 to eject brick
 }
