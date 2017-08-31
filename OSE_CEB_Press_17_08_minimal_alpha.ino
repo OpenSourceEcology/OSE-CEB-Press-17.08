@@ -222,7 +222,6 @@ void loop() {
   mainRetTime = millis() - previousMillis;
   mainRetTimePre = mainRetTime;
 
-
   //Step 7 main moves brick up to eject
 
   while (lowPressure() == true) {
@@ -276,11 +275,12 @@ void loop() {
         maximum = max(drawerRetTime, drawerRetTimePre);
         drift = maximum - minimum;
         if (drift > MAXDRIFT) {
-          break;
+          while( true ) { //sleep in infinite loop
+          }
         }
       }
+      drawerRetTimePre = drawerRetTime;
     }
-    drawerRetTimePre = drawerRetTime;
   }
 }
 //end of main loop
@@ -302,5 +302,3 @@ bool lowPressure() {
     return true;
   }
 }
-
-
