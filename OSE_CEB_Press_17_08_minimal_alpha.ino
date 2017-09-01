@@ -73,11 +73,7 @@ void loop() {
   unsigned long previousMillis = 0;
 
   static unsigned long drawerExtTime = 0;
-  static unsigned long drawerExtTimePre = 0;   //previous time
-
   static float kADrawer = K_A_DRAWER;
-  unsigned long minimum = 0;    //do math
-  unsigned long maximum = 0;    //and compare values
   word drift = 0;               //for timing drift tracking
 
   //Step 1 Calibration Extend drawer Cylinder Fully T_ext is measured
@@ -88,22 +84,6 @@ void loop() {
   digitalWrite(SOLENOID_LEFT, LOW);
   drawerExtTime = millis() - previousMillis;
 
-  if (drawerExtTimePre == 0) {
-    drawerExtTimePre = drawerExtTime;
-  }
-  else {
-    if (drawerExtTime != drawerExtTimePre) {
-      minimum = min(drawerExtTime, drawerExtTimePre);
-      maximum = max(drawerExtTime, drawerExtTime);
-      drift = maximum - minimum;
-      if (drift > MAXDRIFT) {
-        while( true ) { //sleep in infinite loop
-        }
-      }
-    }
-  }
-  drawerExtTimePre = drawerExtTime;
-
   //Step 2 Main Cyl moves down to allow soil loading measure T_con time
     while (lowPressure() == true) {
       digitalWrite(SOLENOID_DOWN, HIGH);
@@ -113,9 +93,8 @@ void loop() {
 
   //Step 3 Contract drawer cylinder half way to close compression chamber
   while (lowPressure() == true) {
-    //drawerMidTime = drawerExtTime / kADrawer ;
     previousMillis = millis();
-    while ((millis() - previousMillis) <= (drawerExtTime/2)) {
+    while ((millis() - previousMillis) <= (( drawerExtTime / kADrawer ) / 2 )) {
       digitalWrite(SOLENOID_RIGHT, HIGH);
     }
     digitalWrite(SOLENOID_RIGHT, LOW);
