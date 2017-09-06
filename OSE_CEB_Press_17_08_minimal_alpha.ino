@@ -6,7 +6,7 @@
  Compensates for difference in time for Extension and Contraction of Rods.
  T_extend = T_contract  * (A_cyl - A_rod) / A_cyl)
  
- Faults require manual user intervention to reset to starting position if faults occur and power must be shujt off to controller by engaging OFF/MANUAL mode(s).
+ Faults require manual user intervention to reset to starting position if faults occur and power must be shut off to controller by engaging OFF/MANUAL mode(s).
  
  Contributions by:
  Abe Anderson
@@ -26,16 +26,11 @@
 #define SOLENOID_DOWN 15    //swap these pin numbers for wire inversion   (default pin 15)
 #define SOLENOID_UP 14      //    (default pin 14)
 
-#define MODE_SELECT 7    //This is for the 3 position SPDT switch for Manual/OFF/Auto
 #define PRESSURE_SENSOR 41  //labeled A3 or F3 silkscreen on the PCB
-
 #define SWITCH_DEBOUNCE 3 //milliseconds to delay for switch debounce
 #define PRESSURE_SENSOR_DEBOUNCE 20 //milliseconds to delay for pressure sensor debounce
-#define COMPRESS_DELAY 500  // 1/2 sec extra to compress brick via main Cyl (default 500ms)
-#define RELEASE_PRESSURE_DELAY 100    //releases pressure from the drawer bottom after compression (default 100ms)
-#define K_A_MAIN 0.004  // T_e = T_c * (k_A)   for 1.25in x14in cylinder  (default 0.004)
+#define DELAY 500  // 1/2 sec extra to compress brick via main Cyl (default 500ms)
 #define K_A_DRAWER 0.008 // T_e = T_c * (k_A)  for 2.75in x10in cylinder  (default 0.008)
-#define MAXDRIFT 500    //Sets maximum time difference in milliseconds from one cycle to the next for all steps to check for faults (default 500ms)
 
 // custom structures, function declarations or prototypes
 bool lowPressure();    //function to read if pressure sensor is HIGH
@@ -43,8 +38,6 @@ bool lowPressure();    //function to read if pressure sensor is HIGH
 void setup() {
 
   //initialize pin I/O Inputs use internal resistor pullups where needed and outputs get set low to prevent glitches while booting
-  pinMode(MODE_SELECT, INPUT);
-  digitalWrite(MODE_SELECT, INPUT_PULLUP);
   pinMode(SOLENOID_RIGHT, OUTPUT);
   digitalWrite(SOLENOID_RIGHT, LOW);
   pinMode(SOLENOID_LEFT, OUTPUT);
@@ -58,7 +51,7 @@ void setup() {
 
   //Initialize  to start position retract main cyl for 1 sec to release pressue contract drawer cylinder fully
   digitalWrite(SOLENOID_DOWN, HIGH);
-  delay(1000);
+  delay(DELAY);
   digitalWrite(SOLENOID_DOWN, LOW);
   while (lowPressure() == true) {
     digitalWrite(SOLENOID_RIGHT, HIGH);
@@ -74,7 +67,6 @@ void loop() {
 
   static unsigned long drawerExtTime = 0;
   static float kADrawer = K_A_DRAWER;
-  word drift = 0;               //for timing drift tracking
 
   //Step 1 Calibration Extend drawer Cylinder Fully T_ext is measured
   while (lowPressure() == true) {
@@ -84,7 +76,7 @@ void loop() {
   digitalWrite(SOLENOID_LEFT, LOW);
   drawerExtTime = millis() - previousMillis;
 
-  //Step 2 Main Cyl moves down to allow soil loading measure T_con time
+  //Step 2 Main Cyl moves down to allow soil loading
     while (lowPressure() == true) {
       digitalWrite(SOLENOID_DOWN, HIGH);
     }
@@ -100,16 +92,16 @@ void loop() {
     digitalWrite(SOLENOID_RIGHT, LOW);
   }
 
-  //Step 4 compression by main cyl with 1 sec
+  //Step 4 compression by main cyl with delay
   while (lowPressure() == true) {
     digitalWrite(SOLENOID_UP, HIGH);
   }
-  delay(COMPRESS_DELAY);
+  delay(DELAY);
   digitalWrite(SOLENOID_UP, LOW);
 
   //Step 5 main Cyl release pressure
   digitalWrite(SOLENOID_DOWN, HIGH);
-  delay(RELEASE_PRESSURE_DELAY);
+  delay(DELAY);
   digitalWrite(SOLENOID_DOWN, LOW);
 
   //Step 6 drawer Cyl contracts opening chamber
