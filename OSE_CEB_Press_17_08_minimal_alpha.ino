@@ -27,7 +27,6 @@
 #define SOLENOID_UP 14      //    (default pin 14)
 
 #define PRESSURE_SENSOR 41  //labeled A3 or F3 silkscreen on the PCB
-#define SWITCH_DEBOUNCE 3 //milliseconds to delay for switch debounce
 #define PRESSURE_SENSOR_DEBOUNCE 20 //milliseconds to delay for pressure sensor debounce
 #define DELAY 500  // 1/2 sec extra to compress brick via main Cyl (default 500ms)
 #define K_A_DRAWER 0.008 // T_e = T_c * (k_A)  for 2.75in x10in cylinder  (default 0.008)
