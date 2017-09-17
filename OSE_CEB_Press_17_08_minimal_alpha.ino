@@ -76,11 +76,10 @@ void loop() {
   drawerExtTime = millis() - previousMillis;
 
   //Step 2 Main Cyl moves down to allow soil loading
-    while (lowPressure() == true) {
-      digitalWrite(SOLENOID_DOWN, HIGH);
-    }
-    digitalWrite(SOLENOID_DOWN, LOW);
+  while (lowPressure() == true) {
+    digitalWrite(SOLENOID_DOWN, HIGH);
   }
+  digitalWrite(SOLENOID_DOWN, LOW);
 
   //Step 3 Contract drawer cylinder half way to close compression chamber
   while (lowPressure() == true) {
@@ -136,3 +135,4 @@ bool lowPressure() {
     return true;
   }
 }
+
