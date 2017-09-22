@@ -29,7 +29,7 @@
 #define PRESSURE_SENSOR 41  //labeled A3 or F3 silkscreen on the PCB
 #define PRESSURE_SENSOR_DEBOUNCE 20 //milliseconds to delay for pressure sensor debounce
 #define DELAY 500  // 1/2 sec extra to compress brick via main Cyl (default 500ms)
-#define K_A_DRAWER 0.008 // T_e = T_c * (k_A)  for 2.75in x10in cylinder  (default 0.008)
+#define K_A_DRAWER 0.84 // T_c = T_e * (k_A)  for 2.5in x 14in cylinder  (default 0.008)
 
 // custom structures, function declarations or prototypes
 bool lowPressure();    //function to read if pressure sensor is HIGH
@@ -48,14 +48,15 @@ void setup() {
   pinMode(PRESSURE_SENSOR, INPUT);
   digitalWrite(PRESSURE_SENSOR, INPUT_PULLUP);
 
-  //Initialize  to start position retract main cyl for 1 sec to release pressue contract drawer cylinder fully
+  //Initialize  to start position retract main cyl for 0.5 sec to release pressue contract drawer cylinder fully
   digitalWrite(SOLENOID_DOWN, HIGH);
   delay(DELAY);
   digitalWrite(SOLENOID_DOWN, LOW);
   while (lowPressure() == true) {
     digitalWrite(SOLENOID_RIGHT, HIGH);
   }
-  digitalWrite(SOLENOID_RIGHT, LOW);
+  digitalWrite(SOLENOID_RIGHT, LOW);// check this - but - pressure may still be high; depends on solenoid - but for 
+                                    // cylinder soilenoid, the pressure may stay high
 }
 
 void loop() {
@@ -65,11 +66,12 @@ void loop() {
   unsigned long previousMillis = 0;
 
   static unsigned long drawerExtTime = 0;
-  static float kADrawer = K_A_DRAWER;
+  
 
-  //Step 1 Calibration Extend drawer Cylinder Fully T_ext is measured
+  //Step 1 Calibration Extend drawer Cylinder Fully T_ext is measure
+  previousMillis = millis();
   while (lowPressure() == true) {
-    previousMillis = millis();
+
     digitalWrite(SOLENOID_LEFT, HIGH);
   }
   digitalWrite(SOLENOID_LEFT, LOW);
@@ -82,9 +84,10 @@ void loop() {
   digitalWrite(SOLENOID_DOWN, LOW);
 
   //Step 3 Contract drawer cylinder half way to close compression chamber
+  previousMillis = millis();
   while (lowPressure() == true) {
-    previousMillis = millis();
-    while ((millis() - previousMillis) <= (( drawerExtTime / kADrawer ) / 2 )) {
+
+    while ((millis() - previousMillis) <= (( drawerExtTime * K_A_DRAWER ) / 2 )) {
       digitalWrite(SOLENOID_RIGHT, HIGH);
     }
     digitalWrite(SOLENOID_RIGHT, LOW);
