@@ -11,7 +11,9 @@
  Contributions by:
  Abe Anderson
  http://opensourceecology.org/wiki/AbeAnd_Log
- 
+ Marcin Jakubowski
+ http://opensourceecology.org/wiki/Marcin_Log
+  
  Unfamiliar with code structures? See https://www.arduino.cc/en/Reference/HomePage
  
  License:
@@ -33,6 +35,7 @@
 
 // custom structures, function declarations or prototypes
 bool lowPressure();    //function to read if pressure sensor is HIGH
+unsigned long drawerExtTime = 0;
 
 void setup() {
 
@@ -55,8 +58,11 @@ void setup() {
   while (lowPressure() == true) {
     digitalWrite(SOLENOID_RIGHT, HIGH);
   }
-  digitalWrite(SOLENOID_RIGHT, LOW);// check this - but - pressure may still be high; depends on solenoid - but for 
+//  digitalWrite(SOLENOID_RIGHT, LOW);// check this - but - pressure may still be high; depends on solenoid - but for 
                                     // cylinder soilenoid, the pressure may stay high
+//  digitalWrite(SOLENOID_LEFT, HIGH);//release pressure in lines 63-65
+//  delay(DELAY/10);
+//  digitalWrite(SOLENOID_LEFT, LOW);
 }
 
 void loop() {
@@ -64,9 +70,6 @@ void loop() {
   //Auto mode
 
   unsigned long previousMillis = 0;
-
-  static unsigned long drawerExtTime = 0;
-  
 
   //Step 1 Calibration Extend drawer Cylinder Fully T_ext is measure
   previousMillis = millis();
@@ -102,14 +105,14 @@ void loop() {
 
   //Step 5 main Cyl release pressure
   digitalWrite(SOLENOID_DOWN, HIGH);
-  delay(DELAY);
+  delay(DELAY/5);
   digitalWrite(SOLENOID_DOWN, LOW);
 
   //Step 6 drawer Cyl contracts opening chamber
   while (lowPressure() == true) {
-    digitalWrite(SOLENOID_DOWN, HIGH);
+    digitalWrite(SOLENOID_RIGHT, HIGH);
   }
-  digitalWrite(SOLENOID_DOWN, LOW);
+  digitalWrite(SOLENOID_RIGHT, LOW);
 
   //Step 7 main moves brick up to eject
   while (lowPressure() == true) {
