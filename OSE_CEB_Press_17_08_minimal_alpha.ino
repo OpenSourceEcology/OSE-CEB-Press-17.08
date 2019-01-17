@@ -1,12 +1,12 @@
-/* Open Source Ecology CEB Press v17.09 v8 Teensy Microcontroller code for Auto mode operation
- Switches FET's HIGH/LOW to control two 3 position hydraulic solenoids,
+/* Open Source Ecology CEB Press v19.01 with Arduino Duo or Mega as controller of choice.
+ Use Mega to keep consistency with OSE D3D 3D Printer to minimize GVCS part count.
+ Switches FET's HIGH/LOW to control two hydraulic solenoids,
  measures piston motion time relative to pressure sensor trigger,
  and repeats cycle while auto calibrating timing from previous cycles and startup positions.
  
- Compensates for difference in time for Extension and Contraction of Rods.
- T_extend = T_contract  * (A_cyl - A_rod) / A_cyl)
+ Extension time is measured. No timing compensation is necessary for compression chamber closure.
  
- Faults require manual user intervention to reset to starting position if faults occur and power must be shut off to controller by engaging OFF/MANUAL mode(s).
+ Faults should be self-resolving based on pressing sequence.
  
  Contributions by:
  Abe Anderson
@@ -22,11 +22,11 @@
 
 //defines to make it easier for non coders to make adjustments for troubleshooting and custom changes
 
-#define SOLENOID_RIGHT 5   //swap these pin numbers for wire inversion      (deafult pin 5)
-#define SOLENOID_LEFT 4    //    (default pin 4)
+#define SOLENOID_RIGHT 5   //swap these pin numbers for wire inversion     
+#define SOLENOID_LEFT 4    //   
 
-#define SOLENOID_DOWN 15    //swap these pin numbers for wire inversion   (default pin 15)
-#define SOLENOID_UP 14      //    (default pin 14)
+#define SOLENOID_DOWN 6    //swap these pin numbers for wire inversion  
+#define SOLENOID_UP 7      //   
 
 #define PRESSURE_SENSOR 41  //labeled A3 or F3 silkscreen on the PCB
 #define PRESSURE_SENSOR_DEBOUNCE 20 //milliseconds to delay for pressure sensor debounce
