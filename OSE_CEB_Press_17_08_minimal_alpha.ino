@@ -1,4 +1,4 @@
-/* Open Source Ecology CEB Press v19.01 with Arduino Duo or Mega as controller of choice.
+/* Open Source Ecology CEB Press v19.01 with Arduino Uno or Mega as controller of choice.
  Use Mega to keep consistency with OSE D3D 3D Printer to minimize GVCS part count.
  Switches FET's HIGH/LOW to control two hydraulic solenoids,
  measures piston motion time relative to pressure sensor trigger,
@@ -6,7 +6,21 @@
  
  Extension time is measured. No timing compensation is necessary for compression chamber closure.
  
- Faults should be self-resolving based on pressing sequence.
+ Faults should be self-resolving based on pressing sequence. See sequence:
+ 
+ https://docs.google.com/presentation/d/1YLo7e6RW4SUq7v5NFQ2WoX2ZFHsnoa3wI9m8Oc5-24g/edit#slide=id.g4d84192e63_0_0
+ 
+ Uses HiLetgo Relay Shield 5V 4 Channel for Arduino.
+ 
+ Relay shield - https://www.amazon.com/HiLetgo-Relay-Shield-Channel-Arduino/dp/B07F7Y55Z7/ref=sr_1_2?ie=UTF8&qid=1547696929&sr=8-2&keywords=hiletgo+relay+shield
+ 
+ Relay 1 is controlled by digital pin 7
+ Relay 2 is controlled by digital pin 6
+ Relay 3 is controlled by digital pin 5
+ Relay 4 is controlled by digital pin 4
+
+ A high written to a pin turns the relay ON
+ A low written to a pin turns the relay OFF
  
  Contributions by:
  Abe Anderson
@@ -20,13 +34,16 @@
  See GPLv3 license file in repo.
  */
 
-//defines to make it easier for non coders to make adjustments for troubleshooting and custom changes
+//defines to make it easier for non-coders to make adjustments for troubleshooting and custom changes
 
-#define SOLENOID_RIGHT 5   //swap these pin numbers for wire inversion     
-#define SOLENOID_LEFT 4    //   
 
-#define SOLENOID_DOWN 6    //swap these pin numbers for wire inversion  
-#define SOLENOID_UP 7      //   
+#define SOLENOID_UP 4      //Extension. See pin mapping above.
+#define SOLENOID_DOWN 5    //swap these pin numbers for wire inversion  
+
+#define SOLENOID_LEFT 6    //Extension.
+#define SOLENOID_RIGHT 7   //swap these pin numbers for wire inversion     
+
+    
 
 #define PRESSURE_SENSOR 41  //labeled A3 or F3 silkscreen on the PCB
 #define PRESSURE_SENSOR_DEBOUNCE 20 //milliseconds to delay for pressure sensor debounce
